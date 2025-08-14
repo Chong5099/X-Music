@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>X Music</title>
+
+  <!-- Embedded CSS (modern, responsive, with clear styles) -->
+  <style>
+    /* ---- Reset & base ---- */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height: 100%; }
+    body {
+      font-family: "Lato", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:#61708e;
+      color:#222;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+    }
+
+    a { color:inherit; text-decoration:none; }
+
+    /* ---- Navigation ---- */
+    nav {
+      background:#0f1720;
+      color:#fff;
+      position:sticky;
+      top:0;
+      z-index:1000;
+      box-shadow:0 2px 6px rgba(2,6,23,0.2);
+    }
+    .navTop {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 28px;
+      gap:12px;
+    }
+    .navTop .brand {
+      display:flex; align-items:center; gap:12px;
+      cursor:pointer;
+    }
+    .navTop h1 { font-size:20px; letter-spacing:0.6px; }
+    .search {
+      position:relative;
+    }
+    .searchInput {
+      padding:8px 12px;
+      border-radius:8px;
+      border: none;
+      width:260px;
+      outline:none;
+      background:#11151a;
+      color:#fff;
+    }
+    /* keep input placeholder in Chinese (grey) */
+    ::placeholder { color:#9aa0a6; }
+
+    .limitedOffer {
+      background:linear-gradient(90deg,#ffd166,#f3c623);
+      color:#111;
+      padding:8px 12px;
+      border-radius:8px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .navBottom {
+      display:flex;
+      justify-content:center;
+      gap:28px;
+      padding:10px 8px;
+      border-top:1px solid rgba(255,255,255,0.03);
+      flex-wrap:wrap;
+    }
+    .menuItem {
+      color:#dbe3e8;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .menuItem:hover { color:#ffd166; }
+
+    /* ---- Slider ---- */
+    .slider {
+      overflow:hidden;
+      background: linear-gradient(180deg,#e9eef3,#f7f8fa);
+      padding:30px 0 40px;
+    }
+    .sliderWrapper {
+      display:flex;
+      width:500%;
+      transition:transform 0.6s cubic-bezier(.2,.8,.2,1);
+    }
+    .sliderItem {
+      width:100vw;
+      min-height:300px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      padding:20px;
+    }
+    .sliderImg {
+      max-width:360px;
+      max-height:360px;
+      border-radius:10px;
+      box-shadow:0 8px 20px rgba(19,24,31,0.12);
+      background: #fff center/cover no-repeat;
+    }
+    .sliderTitle {
+      position:absolute;
+      top:36px;
+      right:6%;
+      font-size:36px;
+      color:#0f1720;
+      font-weight:800;
+      text-transform:uppercase;
+      text-align:right;
+    }
+    .sliderPrice {
+      position:absolute;
+      top:36px;
+      left:6%;
+      font-size:22px;
+      color:#ffd166;
+      background:rgba(0,0,0,0.04);
+      padding:6px 12px;
+      border-radius:6px;
+      font-weight:700;
+    }
+
+    /* ---- Features / brand & model area ---- */
+    section.selector {
+      padding:28px 6%;
+      max-width:1200px;
+      margin:0 auto;
+    }
+    section.selector h2 {
+      font-size:20px;
+      margin-bottom:14px;
+      color:#111827;
+    }
+
+    #brandList, #modelList {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    #brandList button, #modelList button {
+      padding:8px 14px;
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius:8px;
+      cursor:pointer;
+      transition:all .18s ease;
+      font-weight:600;
+    }
+    #brandList button:hover, #modelList button:hover {
+      transform:translateY(-3px);
+      box-shadow:0 6px 18px rgba(15,23,42,0.06);
+    }
+    #brandList button.active, #modelList button.active {
+      background:#111827; color:#ffd166; border-color:#111827;
+    }
+
+    /* ---- Product details & order ---- */
+    .product {
+      background:#fff;
+      max-width:1200px;
+      margin:18px auto 50px;
+      padding:22px;
+      border-radius:10px;
+      display:flex;
+      gap:28px;
+      align-items:center;
+      box-shadow:0 10px 25px rgba(2,6,23,0.04);
+    }
+    .productImg {
+      width:360px;
+      height:240px;
+      object-fit:contain;
+      border-radius:8px;
+      background:#fafafa;
+      border:1px solid #eef2f7;
+    }
+    .productDetails { flex:1; }
+    .productTitle { font-size:26px; font-weight:800; margin-bottom:10px; color:#111827; }
+    .productPrice { font-size:20px; color:#ffd166; font-weight:700; margin-bottom:12px; }
+    .productDesc { color:#6b7280; margin-bottom:18px; }
+    .productButton {
+      padding:10px 18px;
+      background:#111827;
+      color:#fff;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .productButton:hover { background:#0b1220; }
+
+    /* ---- Payment modal ---- */
+    .payment {
+      display:none;
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      background:#fff;
+      padding:20px;
+      width:360px;
+      border-radius:10px;
+      box-shadow:0 20px 60px rgba(2,6,23,0.18);
+      z-index:1500;
+    }
+    .payment .payInput {
+      width:100%;
+      padding:10px;
+      border:1px solid #e6e9ed;
+      border-radius:8px;
+      margin-bottom:10px;
+      outline:none;
+    }
+    .payment .payButton {
+      width:100%;
+      padding:10px;
+      background:#111827;
+      color:#ffd166;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .close {
+      position:absolute;
+      top:10px;
+      right:12px;
+      background:#f3f4f6;
+      border-radius:50%;
+      width:28px;
+      height:28px;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    /* ---- Feedback & Contact ---- */
+    .panel {
+      max-width:1200px;
+      margin:24px auto;
+      background:#fff;
+      padding:22px;
+      border-radius:10px;
+      box-shadow:0 10px 25px rgba(2,6,23,0.04);
+    }
+    .panel h2 { margin-bottom:12px; }
+    .panel form .payInput, .panel form textarea {
+      width:100%;
+      padding:10px;
+      border-radius:8px;
+      border:1px solid #e6e9ed;
+      margin-bottom:10px;
+      outline:none;
+    }
+    .panel form .payButton {
+      background:#111827;color:#ffd166;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700;
+    }
+
+    /* ---- Footer ---- */
+    footer {
+      background:#0b1014; color:#cbd5e1;
+      padding:28px 6%;
+      margin-top:30px;
+    }
+    footer .footerInner { max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+    footer h3 { color:#fff; margin-bottom:8px; }
+
+    /* ---- Search suggestions (hidden by default) ---- */
+    .searchSuggestions {
+      position:absolute;
+      top:42px; 
+      left:0;
+      width:260px;
+      background:#000000;
+      border-radius:8px;
+      border:1px solid #f9f9f6;
+      box-shadow:0 10px 30px rgba(2,6,23,0.08);
+      overflow:auto;
+      display:none;
+      z-index:1200;
+      max-height:320px;
+    }
+    .searchSuggestions .item { padding:10px; cursor:pointer; border-bottom:1px solid #d33a3a; }
+    .searchSuggestions .item:hover { background:#f8fafc; }
+
+    /* ---- Responsive ---- */
+    @media (max-width:900px) {
+      .sliderImg { max-width:240px; }
+      .product { flex-direction:column; padding:16px; gap:14px; }
+      .productImg { width:100%; height:220px; }
+      .searchInput { width:180px; }
+      .searchSuggestions { left:auto; right:0; }
+    }
+    @media (max-width:480px) {
+      .navTop { padding:10px; gap:8px; }
+      .navBottom { gap:10px; padding:8px; }
+      .sliderImg { max-width:180px; }
+      #brandList button, #modelList button { padding:8px 10px; font-size:13px; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav>
+    <div class="navTop">
+      <div class="brand" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        <h1>🎵 X Music</h1>
+      </div>
+
+      <div class="search">
+        <!-- placeholder kept in Chinese as requested -->
+        <input class="searchInput" placeholder="Search for instruments..." aria-label="search" />
+        <div class="searchSuggestions" id="suggestions"></div>
+      </div>
+
+      <div>
+        <span class="limitedOffer" onclick="location.href='admin.php'">Admin</span>
+      </div>
+    </div>
+
+    <div class="navBottom">
+      <!-- product category labels changed to English -->
+      <div class="menuItem" data-index="0">Drums</div>
+      <div class="menuItem" data-index="1">Piano</div>
+      <div class="menuItem" data-index="2">Guitar</div>
+      <div class="menuItem" data-index="3">Bass</div>
+      <div class="menuItem" data-index="4">Keyboard</div>
+
+      <div style="margin-left:12px"><a href="#feedback" style="color:#dbeafe">Feedback</a></div>
+      <div><a href="#contact" style="color:#dbeafe">Contact</a></div>
+    </div>
+  </nav>
+
+  <!-- SLIDER -->
+  <div class="slider">
+    <div class="sliderWrapper" id="sliderWrapper">
+      <!-- 5 slides, images are references—replace with yours if needed -->
+      <div class="sliderItem">
+        <img class="sliderImg" src="./img/Product/drum1.png" alt="Drums main" />
+        <div class="sliderTitle">Drums<br/>New Arrival</div>
+        <div class="sliderPrice">RM2800~RM6000</div>
+      </div>
+
+      <div class="sliderItem">
+        <img class="sliderImg" src="./img/Product/piano1.png" alt="Piano main" />
+        <div class="sliderTitle">Piano<br/>New Arrival</div>
+        <div class="sliderPrice">RM12000~RM500000</div>
+      </div>
+
+      <div class="sliderItem">
+        <img class="sliderImg" src="./img/Product/guitar1.png" alt="Guitar main" />
+        <div class="sliderTitle">Guitar<br/>New Arrival</div>
+        <div class="sliderPrice">RM3500~12000</div>
+      </div>
+
+      <div class="sliderItem">
+        <img class="sliderImg" src="./img/Product/bass1.png" alt="Bass main" />
+        <div class="sliderTitle">Bass<br/>New Arrival</div>
+        <div class="sliderPrice">RM4000~RM8000</div>
+      </div>
+
+      <div class="sliderItem">
+        <img class="sliderImg" src="./img/Product/keyboard1.png" alt="Keyboard main" />
+        <div class="sliderTitle">Keyboard<br/>New Arrival</div>
+        <div class="sliderPrice">RM2000~RM12000</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BRAND & MODEL SELECTOR -->
+  <section class="selector" id="selectorSection">
+    <h2>Please select brand & model</h2>
+
+    <!-- brand buttons -->
+    <div id="brandList"></div>
+
+    <!-- model buttons -->
+    <div id="modelList"></div>
+  </section>
+
+  <!-- PRODUCT DETAILS & ORDER -->
+  <section class="product" id="productSection">
+    <img class="productImg" src="./img/Product/drumA.png" alt="Selected product image" />
+    <div class="productDetails">
+      <div class="productTitle">Please select a model</div>
+      <div class="productPrice">RM0</div>
+      <div class="productDesc">Select Instrument → Brand → Model to view details and order.</div>
+      <div style="margin-top:16px;">
+        <button class="productButton" id="orderBtn">Order Now</button>
+      </div>
+    </div>
+
+<!-- payment modal -->
+<div class="payment" id="paymentModal" aria-hidden="true">
+  <div class="close" id="closePayment">X</div>
+  <h3 style="margin-bottom:12px;">Order Information</h3>
+
+  <form action="data.php" method="POST">
+    <!-- 中文 placeholder -->
+    <input class="payInput" type="text" name="nama" placeholder="name" required />
+    <input class="payInput" type="text" name="telephone_number" placeholder="phonenumber" required />
+    <input class="payInput" type="text" name="address" placeholder="address" required />
+    <input class="payInput" type="text" name="card_number" placeholder="cardnumber" required />
+
+    <!-- 自动填充的隐藏字段 -->
+    <input type="hidden" name="product_name" class="productNameField" />
+    <input type="hidden" name="purchase_time" class="purchaseTimeField" />
+    
+    <button class="payButton" type="submit">Confirm Order</button>
+  </form>
+</div>
+
+<script>
+  document.querySelector(".payButton").addEventListener("click", function () {
+    const productNameField = document.querySelector(".productNameField");
+    const purchaseTimeField = document.querySelector(".purchaseTimeField");
+
+    // 当前选择的产品名称
+    const currentProductName = document.querySelector(".productTitle").textContent.trim();
+    // 当前设备本地时间
+    const currentTime = new Date().toLocaleString();
+
+    productNameField.value = currentProductName;
+    purchaseTimeField.value = currentTime;
+  });
+</script>
+
+
+
+  </section>
+
+<!-- FEEDBACK -->
+<section class="panel" id="feedback">
+  <h2>Feedback</h2>
+  <form id="feedbackForm" action="feedback.php" method="POST">
+    <input class="payInput" type="text" name="nama" placeholder="Nama" required />
+    <input class="payInput" type="email" name="email" placeholder="Email" required />
+    <textarea class="payInput" rows="4" name="opinion" placeholder="Opinion..." required></textarea>
+    
+    <!-- 隐藏字段存时间 -->
+    <input type="hidden" name="feedback_time" id="feedbackTimeField" />
+
+    <button type="submit" class="payButton">Submit Feedback</button>
+  </form>
+</section>
+
+<script>
+document.querySelector("#feedbackForm").addEventListener("submit", function() {
+    const now = new Date().toLocaleString(); // 本地时间
+    document.querySelector("#feedbackTimeField").value = now;
+});
+</script>
+
+
+  </section>
+
+  <!-- CONTACT -->
+  <section class="panel" id="contact">
+    <h2>Contact Us</h2>
+    <p>Email: support@XMusic.com</p>
+    <p>Phone: +6012 345 6789</p>
+    <div style="margin-top:10px">
+      <!-- icons placeholders -->
+      <img src="./img/Contact/facebook.png" alt="fb" style="width:28px;margin-right:8px">
+      <img src="./img/Contact/instagram.png" alt="ig" style="width:28px;margin-right:8px">
+      <img src="./img/Contact/youtube.png" alt="yt" style="width:28px;margin-right:8px">
+      <img src="./img/Contact/whatsapp.png" alt="wa" style="width:28px">
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footerInner">
+      <div>
+        <h3>About Us</h3>
+        <p>X Music provides quality instruments and dependable after-sales service.</p>
+      </div>
+      <div>
+        <h3>Help</h3>
+        <p>FAQ | After-sales Service | Return Policy</p>
+      </div>
+      <div style="display:flex;align-items:center">
+        <div style="color:#fff;font-weight:700;margin-right:12px">© 2025 X Music</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JS: three-level selection + search + UI -->
+  <script>
+    /* ---------- Data (5 instruments; brands & models kept as original names) ---------- */
+    const products = [
+      {
+        name: "Drums",
+        mainImg: "./img/Product/drum1.png",
+        brands: [
+          { name: "Yamaha", models: [
+            { name: "Stage Custom", price: 3000, img: "./img/Product/yamaha_stage_custom_drum_set.png" },
+            { name: "Recording Custom", price: 5000, img: "./img/Product/yamaha_recording_custom_drum_set.png" }
+          ]},
+          { name: "Pearl", models: [
+            { name: "Export", price: 2800, img: "./img/Product/pearl_export_drum_set.png" },
+            { name: "Masters Maple", price: 4500, img: "./img/Product/pearl_masters_maple_drum_set.png" }
+          ]},
+          { name: "Tama", models: [
+            { name: "Imperialstar", price: 3500, img: "./img/Product/tama_imperialstar_drum_set.png" },
+            { name: "Starclassic", price: 6000, img: "./img/Product/tama_starclassic_drum_set.png" }
+          ]}
+        ]
+      },
+      {
+        name: "Piano",
+        mainImg: "./img/Product/piano1.png",
+        brands: [
+          { name: "Yamaha", models: [
+            { name: "U3", price: 12000, img: "./img/Product/yamaha_u3_piano.png" },
+            { name: "C3 Grand", price: 45000, img: "./img/Product/yamaha_c3_grand_piano.png" }
+          ]},
+          { name: "Steinway", models: [
+            { name: "Model D", price: 500000, img: "./img/Product/steinway_model_d_piano.png" }
+          ]},
+          { name: "Kawai", models: [
+            { name: "K-300", price: 15000, img: "./img/Product/kawai_k300_piano.png" }
+          ]}
+        ]
+      },
+      {
+        name: "Guitar",
+        mainImg: "./img/Product/guitar1.png",
+        brands: [
+          { name: "Fender", models: [
+            { name: "Stratocaster", price: 4500, img: "./img/Product/fender_stratocaster_guitar.png" },
+            { name: "Telecaster", price: 4300, img: "./img/Product/fender_telecaster_guitar.png" }
+          ]},
+          { name: "Gibson", models: [
+            { name: "Les Paul", price: 12000, img: "./img/Product/gibson_les_paul_guitar.png" }
+          ]},
+          { name: "Ibanez", models: [
+            { name: "RG", price: 3500, img: "./img/Product/ibanez_rg_guitar.png" }
+          ]}
+        ]
+      },
+      {
+        name: "Bass",
+        mainImg: "./img/Product/bass1.png",
+        brands: [
+          { name: "Fender", models: [
+            { name: "Jazz Bass", price: 5000, img: "./img/Product/fender_jass_bass.png" }
+          ]},
+          { name: "Music Man", models: [
+            { name: "StingRay", price: 8000, img: "./img/Product/music_man_stringray_bass.png" }
+          ]},
+          { name: "Ibanez", models: [
+            { name: "SR", price: 4000, img: "./img/Product/ibanez_sr_bass.png" }
+          ]}
+        ]
+      },
+      {
+        name: "Keyboard",
+        mainImg: "./img/Product/keyboard1.png",
+        brands: [
+          { name: "Yamaha", models: [
+            { name: "PSR", price: 2000, img: "./img/Product/yamaha_psr_keyboard.png" }
+          ]},
+          { name: "Roland", models: [
+            { name: "Fantom", price: 12000, img: "./img/Product/roland_fantom_keyboard.png" }
+          ]},
+          { name: "Korg", models: [
+            { name: "Kronos", price: 15000, img: "./img/Product/korg_kronos_keyboard.png" }
+          ]}
+        ]
+      }
+    ];
+
+    /* ---------- State ---------- */
+    let chosenInstrumentIndex = 0;
+    let chosenBrandIndex = 0;
+    let chosenModelIndex = 0;
+
+    /* ---------- Elements ---------- */
+    const sliderWrapper = document.getElementById("sliderWrapper");
+    const brandList = document.getElementById("brandList");
+    const modelList = document.getElementById("modelList");
+    const productImg = document.querySelector(".productImg");
+    const productTitle = document.querySelector(".productTitle");
+    const productPrice = document.querySelector(".productPrice");
+    const productDesc = document.querySelector(".productDesc");
+    const orderBtn = document.getElementById("orderBtn");
+    const paymentModal = document.getElementById("paymentModal");
+    const closePayment = document.getElementById("closePayment");
+    const searchInput = document.querySelector(".searchInput");
+    const suggestionsBox = document.getElementById("suggestions");
+
+    /* ---------- Utility: render slider position ---------- */
+    function moveSliderTo(index){
+      const offset = -100 * index;
+      sliderWrapper.style.transform = `translateX(${offset}vw)`;
+    }
+
+    /* ---------- Render brand buttons ---------- */
+    function renderBrandList(instrumentIndex){
+      brandList.innerHTML = "";
+      modelList.innerHTML = "";
+      const instrument = products[instrumentIndex];
+      instrument.brands.forEach((brand, bi) => {
+        const btn = document.createElement("button");
+        btn.textContent = brand.name;
+        btn.className = (bi === chosenBrandIndex && instrumentIndexMatches(instrumentIndex)) ? "active" : "";
+        btn.addEventListener("click", () => {
+          chosenInstrumentIndex = instrumentIndex;
+          chosenBrandIndex = bi;
+          chosenModelIndex = 0;
+          renderBrandList(chosenInstrumentIndex);
+          renderModelList(chosenInstrumentIndex, chosenBrandIndex);
+          updateProductDetailView();
+        });
+        brandList.appendChild(btn);
+      });
+    }
+
+    function instrumentIndexMatches(i){
+      return i === chosenInstrumentIndex;
+    }
+
+    /* ---------- Render model buttons ---------- */
+    function renderModelList(instrumentIndex, brandIndex){
+      modelList.innerHTML = "";
+      const brand = products[instrumentIndex].brands[brandIndex];
+      brand.models.forEach((model, mi) => {
+        const btn = document.createElement("button");
+        btn.textContent = model.name;
+        btn.className = (mi === chosenModelIndex && instrumentIndexMatches(instrumentIndex) && brandIndex === chosenBrandIndex) ? "active" : "";
+        btn.addEventListener("click", () => {
+          chosenInstrumentIndex = instrumentIndex;
+          chosenBrandIndex = brandIndex;
+          chosenModelIndex = mi;
+          renderModelList(chosenInstrumentIndex, chosenBrandIndex);
+          renderBrandList(chosenInstrumentIndex);
+          updateProductDetailView();
+        });
+        modelList.appendChild(btn);
+      });
+    }
+
+    /* ---------- Update product detail area ---------- */
+    function updateProductDetailView(){
+      const model = products[chosenInstrumentIndex].brands[chosenBrandIndex].models[chosenModelIndex];
+      productTitle.textContent = model.name;
+      productPrice.textContent = "RM" + model.price;
+      productImg.src = model.img;
+      productDesc.textContent = `${products[chosenInstrumentIndex].name} • ${products[chosenInstrumentIndex].brands[chosenBrandIndex].name} • ${model.name}`;
+    }
+
+    /* ---------- Menu navigation (category clicks) ---------- */
+    document.querySelectorAll(".menuItem").forEach((el) => {
+      el.addEventListener("click", () => {
+        const idx = Number(el.dataset.index);
+        if (!Number.isNaN(idx) && idx >= 0 && idx < products.length) {
+          chosenInstrumentIndex = idx;
+          chosenBrandIndex = 0;
+          chosenModelIndex = 0;
+          moveSliderTo(idx);
+          renderBrandList(chosenInstrumentIndex);
+          renderModelList(chosenInstrumentIndex, chosenBrandIndex);
+          updateProductDetailView();
+        }
+      });
+    });
+
+    /* ---------- Initialize slider images (in case some slides missing) ---------- */
+    // sliderWrapper is already populated in HTML; ensure slider starts at 0
+    moveSliderTo(0);
+
+    /* ---------- Initial render ---------- */
+    renderBrandList(chosenInstrumentIndex);
+    renderModelList(chosenInstrumentIndex, chosenBrandIndex);
+    updateProductDetailView();
+
+    /* ---------- Order modal toggle ---------- */
+    orderBtn.addEventListener("click", () => {
+      paymentModal.style.display = "block";
+      paymentModal.setAttribute("aria-hidden","false");
+    });
+    closePayment.addEventListener("click", () => {
+      paymentModal.style.display = "none";
+      paymentModal.setAttribute("aria-hidden","true");
+    });
+
+    /* ---------- Instant search: match instrument / brand / model ----------
+       Behavior:
+         - When typing, we try to find model matches across all instruments.
+         - Suggestions box shows matches as "Instrument - Brand - Model".
+         - Clicking suggestion will switch to that instrument/brand/model.
+         - Matching is case-insensitive and trims input.
+    */
+    function clearSuggestions(){
+      suggestionsBox.innerHTML = "";
+      suggestionsBox.style.display = "none";
+    }
+
+    function showSuggestions(list){
+      suggestionsBox.innerHTML = "";
+      if (list.length === 0) { clearSuggestions(); return; }
+      list.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.textContent = `${item.instrument} - ${item.brand} - ${item.model} (${item.priceText})`;
+        div.addEventListener("click", () => {
+          // switch to matched product
+          chosenInstrumentIndex = item.i;
+          chosenBrandIndex = item.bi;
+          chosenModelIndex = item.mi;
+          moveSliderTo(chosenInstrumentIndex);
+          renderBrandList(chosenInstrumentIndex);
+          renderModelList(chosenInstrumentIndex, chosenBrandIndex);
+          updateProductDetailView();
+          clearSuggestions();
+          searchInput.value = ""; // clear input (placeholder remains Chinese)
+        });
+        suggestionsBox.appendChild(div);
+      });
+      suggestionsBox.style.display = "block";
+    }
+
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.trim().toLowerCase();
+      if (!q) { clearSuggestions(); return; }
+      const results = [];
+      products.forEach((instr, i) => {
+        instr.brands.forEach((brand, bi) => {
+          brand.models.forEach((model, mi) => {
+            // match brand or model (instrument names are English; matching them is optional)
+            if (brand.name.toLowerCase().includes(q) || model.name.toLowerCase().includes(q) || instr.name.toLowerCase().includes(q)) {
+              results.push({
+                instrument: instr.name,
+                brand: brand.name,
+                model: model.name,
+                priceText: "RM" + model.price,
+                i, bi, mi
+              });
+            }
+          });
+        });
+      });
+      showSuggestions(results.slice(0, 50)); // limit to first 50 hits
+    });
+
+    // clicking outside suggestions hides it
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".search") && !e.target.closest("#suggestions")) {
+        clearSuggestions();
+      }
+    });
+
+    /* ---------- Optional: keyboard nav for suggestions (basic) ---------- */
+    let selectedSuggestion = -1;
+    searchInput.addEventListener("keydown", (e) => {
+      const items = suggestionsBox.querySelectorAll(".item");
+      if (items.length === 0) return;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        selectedSuggestion = Math.min(selectedSuggestion + 1, items.length - 1);
+        items.forEach(it => it.style.background = "");
+        items[selectedSuggestion].style.background = "#eef2ff";
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        selectedSuggestion = Math.max(selectedSuggestion - 1, 0);
+        items.forEach(it => it.style.background = "");
+        items[selectedSuggestion].style.background = "#eef2ff";
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (selectedSuggestion >= 0 && items[selectedSuggestion]) items[selectedSuggestion].click();
+        selectedSuggestion = -1;
+      }
+    });
+
+    /* ---------- Simple accessibility: focus outline for buttons ---------- */
+    document.addEventListener("keyup", (e) => {
+      if (e.key === "Tab") {
+        document.body.classList.add("show-focus");
+      }
+    });
+  </script>
+</body>
+</html>
